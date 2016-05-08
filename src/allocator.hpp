@@ -74,6 +74,7 @@ namespace ministl
 	template <typename T> 
 	class allocator
 	{
+	public:
 		using this_type			= allocator<T>;
 		using value_type		= T;
 		using pointer			= T *;
@@ -89,7 +90,7 @@ namespace ministl
 		allocator() = default;
 		allocator(const this_type &) = delete;
 		this_type& operator=(const this_type &) = delete;
-		~allocator();
+		~allocator() = default;
 
 		//
 		pointer address(reference x) const noexcept
@@ -103,9 +104,13 @@ namespace ministl
 
 		//TODO different implementation is needed. the original just calls malloc() and free()
 		
-		pointer allocate(size_type n, allocator<void>::const_pointer hint = 0)
+		pointer allocate(size_type n, allocator<void>::const_pointer hint = nullptr)
 		{
-			return static_cast<pointer>(malloc( n * sizeof(value_type) ));
+			size_type userSize = n * sizeof(value_type);
+			pointer allocated_ptr = nullptr;
+			if(userSize >0 && userSize < static_cast<size_t>(-1) )
+				allocated_ptr = static_cast<pointer>(malloc( n * sizeof(value_type) ));
+			return allocated_ptr;
 		}
 
 		void deallocate(pointer p)
@@ -127,7 +132,8 @@ namespace ministl
 		void construct(U* p, Args&&... args)
 		{
 			//TODO a forward() to wrap args
-			p->U(args);
+			::new (static_cast<void *>(p)) U(forward<Args>(args)...);
+
 		}
 		
 		template<typename U>
@@ -144,6 +150,7 @@ namespace ministl
 	template <> 
 	class allocator<void>
 	{
+	public:
 		using this_type			= allocator<void>;
 		using pointer			= void *;
 		using const_pointer		= const void *;
