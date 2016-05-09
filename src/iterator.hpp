@@ -23,7 +23,7 @@ namespace ministl
 	class bidirectional_iterator_tag:	public forward_iterator_tag			{};
 	class random_access_iterator_tag:	public bidirectional_iterator_tag	{};
 
-		//iterator_traits(partial specializations for pointer and const pointer).
+	//iterator_traits(partial specializations for pointer and const pointer).
 	template<typename T>
 	class iterator_traits
 	{
@@ -60,14 +60,13 @@ namespace ministl
 
 	};
 
-	template
-		<
+	template<
 			typename Category,
 			typename T, 
 			typename Distance	= ptrdiff_t,
 			typename Pointer	= T*, 
-			typename Reference	= T&, 
-	>
+			typename Reference	= T& 
+			>
 	class iterator
 	{
 	public:

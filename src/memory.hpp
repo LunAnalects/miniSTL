@@ -1,8 +1,10 @@
 #ifndef MINISTL_MEMORY_HPP
 #define MINISTL_MEMORY_HPP
 
-#include <cstdint>
+#include "types.hpp"
 #include "internal/pointer.hpp"
+#include "unique_ptr.hpp"
+
 namespace ministl
 {
 	
