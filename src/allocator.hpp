@@ -1,9 +1,12 @@
 #ifndef MINISTL_ALLOCATOR_HPP
 #define MINISTL_ALLOCATOR_HPP
 #include "types.hpp"
-#include "stdlib.h"
+#include <stdlib.h>
+#include <forward_list>
+
 namespace ministl
 {
+	//TODO allocator_tarits
 	template <typename T> 
 	class allocator
 	{
@@ -21,8 +24,14 @@ namespace ministl
 	public:
 
 		allocator() = default;
-		allocator(const this_type &) = delete;
-		this_type& operator=(const this_type &) = delete;
+		allocator(const this_type &)
+		{
+			
+		}
+		this_type& operator=(const this_type &)
+		{
+
+		}
 		~allocator() = default;
 
 		//
@@ -36,11 +45,11 @@ namespace ministl
 		}
 
 		//TODO different implementation is needed. the original just calls malloc() and free()
-		
+		//return NULL when memory alloc failed.
 		pointer allocate(size_type n, allocator<void>::const_pointer hint = nullptr)
 		{
 			size_type userSize = n * sizeof(value_type);
-			pointer allocated_ptr = nullptr;
+			pointer allocated_ptr = NULL;//use NULL because of malloc() 
 			if(userSize >0 && userSize < static_cast<size_t>(-1) )
 				allocated_ptr = static_cast<pointer>(malloc( n * sizeof(value_type) ));
 			return allocated_ptr;
@@ -64,8 +73,8 @@ namespace ministl
 		template <typename U, typename... Args>
 		void construct(U* p, Args&&... args)
 		{
-			//TODO a forward() to wrap args
-			::new (static_cast<void *>(p)) U(forward<Args>(args)...);
+			//TODO a forward() to wrap args, now using std:: version
+			::new (static_cast<void *>(p)) U(std::forward<Args>(args)...);
 
 		}
 		
@@ -116,8 +125,23 @@ namespace ministl
 		}
 
 
+
 	};
 	 
+
+
+	template<typename T1, typename T2>
+	inline bool operator==(const allocator<T1>& lhs, const allocator<T2>& rhs)
+	{
+		return true; // All allocators are considered equal, as they merely use global new/delete.
+	}
+
+
+	template<typename T1, typename T2>
+	inline bool operator!=(const allocator<T1>& lhs, const allocator<T2>& rhs)
+	{
+		return false; // All allocators are considered equal, as they merely use global new/delete.
+	}
 
 }//namespace ministl
 

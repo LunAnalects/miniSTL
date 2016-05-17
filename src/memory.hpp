@@ -1,12 +1,32 @@
 #ifndef MINISTL_MEMORY_HPP
 #define MINISTL_MEMORY_HPP
 
+#include "copy.hpp"
 #include "types.hpp"
 #include "internal/pointer.hpp"
 #include "unique_ptr.hpp"
 
 namespace ministl
 {
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	class reference_count
 	{
@@ -22,11 +42,22 @@ namespace ministl
 
 
 
-	template<typename T,>
+
+
+
+
+
+	template<typename T>
 	class shared_ptr
 	{
 		
 	};
+
+
+
+
+
+
 
 }//ministl
 
