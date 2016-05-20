@@ -16,7 +16,7 @@ namespace ministl
 {
 
 	
-	//five kinds of iterators.
+	//Category of iterators.
 	class input_iterator_tag												{};
 	class output_iterator_tag												{};
 	class forward_iterator_tag :		public input_iterator_tag			{};

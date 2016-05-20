@@ -60,6 +60,29 @@ namespace ministl
 			free(p);
 		}
 
+		void destruct(pointer p)
+		{
+			p->~value_type();
+		}
+		void destruct(pointer p, size_type n)
+		{
+			for (; n > 0; --n,++p)
+			{
+				p->~value_type();
+			}
+		}
+		void destruct(pointer begin, pointer end)
+		{
+			size_type n = end - begin;
+			destruct(begin, n);
+		}
+
+		template<typename...Args>
+		void construct(pointer p,Args&&... args)
+		{
+			::new(static_cast<void*>(p)) value_type(std::forward<Args>(args)...);
+		}
+
 		size_type max_size() const noexcept
 		{
 			//implemetation in VC++ STL
@@ -70,19 +93,6 @@ namespace ministl
 		//in C++11: template <class U, class... Args>
 		//			void construct(U* p, Args&&... args);
 		*/
-		template <typename U, typename... Args>
-		void construct(U* p, Args&&... args)
-		{
-			//TODO a forward() to wrap args, now using std:: version
-			::new (static_cast<void *>(p)) U(std::forward<Args>(args)...);
-
-		}
-		
-		template<typename U>
-		void destroy(U* p)
-		{
-			p->~U();
-		}
 
 	private:
 

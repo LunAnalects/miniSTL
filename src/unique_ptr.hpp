@@ -31,14 +31,17 @@ namespace ministl
 	template <class T, class D = default_delete<T>>
 	class unique_ptr
 	{
+	public:
+		typedef T* pointer;
+		typedef T element_type;
+		typedef D deleter_type;
+
 	protected:
 		pointer			uPtr;
 		deleter_type	uDeleter;
 
 	public:
-		typedef T* pointer;
-		typedef T element_type;
-		typedef D deleter_type;
+
 
 		// 20.10.1.2.1, constructors
 		constexpr unique_ptr() noexcept
@@ -51,6 +54,7 @@ namespace ministl
 		{
 
 		}
+
 
 		unique_ptr(pointer p, deleter_type d1) noexcept
 			: uPtr(p), uDeleter(d1)
@@ -101,6 +105,7 @@ namespace ministl
 		unique_ptr& operator=(nullptr_t) noexcept
 		{
 			uPtr = nullptr;
+			return *this;
 		}
 
 		// 20.10.1.2.4, observers
