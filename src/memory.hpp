@@ -47,7 +47,7 @@ namespace ministl
 	public:
 		reference_count():sharedCount(1), weakCount(1){}
 
-
+		
 	private:
 		uint32_t sharedCount;
 		uint32_t weakCount;

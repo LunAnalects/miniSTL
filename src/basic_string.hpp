@@ -165,7 +165,7 @@ namespace ministl
 		this_type &insert( size_type index, const_pointer s);
 		this_type &insert( size_type index, const_pointer, size_type count);
 		this_type &insert( size_type index, const this_type &str);
-		this_type &insert( size_type index, const this_type & str
+		this_type &insert( size_type index, const this_type & str,
 			size_type index_str, size_type count = npos);
 
 		void push_back(value_type ch);
