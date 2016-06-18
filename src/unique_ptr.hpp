@@ -37,34 +37,32 @@ namespace ministl
 		typedef D deleter_type;
 
 	protected:
-		pointer			uPtr;
-		deleter_type	uDeleter;
+		pointer			uPtr_;
+		deleter_type	uDeleter_;
 
 	public:
-
-
 		// 20.10.1.2.1, constructors
 		constexpr unique_ptr() noexcept
-			:uPtr(nullptr)
+			:uPtr_(nullptr)
 		{
 		}
 
 		explicit unique_ptr(pointer p) noexcept
-			: uPtr(p)
+			: uPtr_(p)
 		{
 
 		}
 
 
 		unique_ptr(pointer p, deleter_type d1) noexcept
-			: uPtr(p), uDeleter(d1)
+			: uPtr_(p), uDeleter_(d1)
 		{
 
 		}
 
 		//unique_ptr(pointer p, ? d2) noexcept;
 		unique_ptr(unique_ptr&& u) noexcept
-			:uPtr(u.get())
+			:uPtr_(u.get())
 		{
 
 		}
@@ -74,7 +72,7 @@ namespace ministl
 
 		template <class U, class E>
 		unique_ptr(unique_ptr<U, E>&& u) noexcept
-			: uPtr(u.get()), uDeleter(u.get_deleter())
+			: uPtr_(u.get()), uDeleter_(u.get_deleter())
 		{
 
 		}
@@ -82,29 +80,29 @@ namespace ministl
 		// 20.10.1.2.2, destructor //in standard this has no noexcept keyword
 		~unique_ptr() noexcept
 		{
-			//former code:  uDeleter(uPtr); 
+			//former code:  uDeleter_(uPtr_); 
 			reset();
 		}
 
 		// 20.10.1.2.3, move assignment
 		unique_ptr& operator=(unique_ptr&& u) noexcept
 		{
-			auto tempptr = uPtr;
-			uPtr = u.get();
-			uDeleter(tempptr);
+			auto tempptr = uPtr_;
+			uPtr_ = u.get();
+			uDeleter_(tempptr);
 			return *this;
 		}
 		template <class U, class E>
 		unique_ptr& operator=(unique_ptr<U, E>&& u) noexcept
 		{
-			auto tempptr = uPtr;
-			uPtr = u.get();
-			uDeleter = u.get_deleter();
+			auto tempptr = uPtr_;
+			uPtr_ = u.get();
+			uDeleter_ = u.get_deleter();
 			return *this;
 		}
 		unique_ptr& operator=(nullptr_t) noexcept
 		{
-			uPtr = nullptr;
+			uPtr_ = nullptr;
 			return *this;
 		}
 
@@ -113,7 +111,7 @@ namespace ministl
 		//add_lvalue_reference_t<T> operator*() const;
 		T&					operator*() const
 		{
-			return *uPtr;
+			return *uPtr_;
 		}
 
 		pointer				operator->() const noexcept
@@ -123,35 +121,35 @@ namespace ministl
 
 		pointer				get() const noexcept
 		{
-			return uPtr;
+			return uPtr_;
 		}
 		deleter_type&		get_deleter() noexcept
 		{
-			return uDeleter;
+			return uDeleter_;
 		}
 		const deleter_type& get_deleter() const noexcept
 		{
-			return uDeleter;
+			return uDeleter_;
 		}
 		explicit			operator bool() const noexcept
 		{
-			return uPtr != pointer();
+			return uPtr_ != pointer();
 		}
 
 		// 20.10.1.2.5 modifiers
 		pointer				release() noexcept
 		{
-			const pointer pTemp = uPtr;
-			uPtr = pointer();
+			const pointer pTemp = uPtr_;
+			uPtr_ = pointer();
 			return pTemp;
 		}
 
 		void				reset(pointer p = pointer()) noexcept
 		{
-			if (p != uPtr)
+			if (p != uPtr_)
 			{
-				uDeleter(uPtr);
-				uPtr = p;
+				uDeleter_(uPtr_);
+				uPtr_ = p;
 			}
 		}
 

@@ -1,34 +1,27 @@
 #ifndef MINISTL_MEMORY_HPP
 #define MINISTL_MEMORY_HPP
 
+#include <type_traits>
 #include "types.hpp"
 #include "internal/pointer.hpp"
 #include "unique_ptr.hpp"
+#include "shared_ptr.hpp"
+#include "weak_ptr.hpp"
 #include "iterator.hpp"
-#include <type_traits>
 #include "utility.hpp"
 
 namespace ministl
 {
-	
-	
 	template<typename T>
-	void *get_temporary_buffer(ptrdiff_t n)
+	inline void *get_temporary_buffer(ptrdiff_t n)
 	{
 		return operator new(sizeof(T) * n);
 	}
 
-	void return_temporary_buffer(void *p)
+	inline void return_temporary_buffer(void *p)
 	{
 		delete[] p;
 	}
-	
-	
-	
-	
-	
-	
-	
 	
 	template<typename ForwardIterator>
 	void destroy(ForwardIterator it1, ForwardIterator it2)
@@ -39,21 +32,6 @@ namespace ministl
 			it1->~value_type();
 		}
 	}
-	
-	
-	
-	class reference_count
-	{
-	public:
-		reference_count():sharedCount(1), weakCount(1){}
-
-		
-	private:
-		uint32_t sharedCount;
-		uint32_t weakCount;
-
-	};
-
 
 	template<typename InputIterator, 
 		typename Size, 
@@ -77,7 +55,6 @@ namespace ministl
 		return uninitialized_move_n(first, last - first, result);
 	}
 
-
 	template<typename InputIterator,
 		typename Size,
 		typename ForwardIterator>
@@ -98,19 +75,6 @@ namespace ministl
 	{
 		return uninitialized_copy_n(first, last - first, result);
 	}
-
-
-	template<typename T>
-	class shared_ptr
-	{
-		
-	};
-
-
-
-
-
-
 
 }//ministl
 
