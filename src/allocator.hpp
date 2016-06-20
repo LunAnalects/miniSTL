@@ -1,5 +1,10 @@
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
 #ifndef MINISTL_ALLOCATOR_HPP
 #define MINISTL_ALLOCATOR_HPP
+
 #include "types.hpp"
 #include <stdlib.h>
 #include <forward_list>
@@ -49,7 +54,7 @@ namespace ministl
 		pointer allocate(size_type n, allocator<void>::const_pointer hint = nullptr)
 		{
 			size_type userSize = n * sizeof(value_type);
-			pointer allocated_ptr = NULL;//use NULL because of malloc() 
+			pointer allocated_ptr = NULL; //use NULL because of malloc() 
 			if(userSize >0 && userSize < static_cast<size_t>(-1) )
 				allocated_ptr = static_cast<pointer>(malloc( n * sizeof(value_type) ));
 			return allocated_ptr;

@@ -1,10 +1,39 @@
-﻿#ifndef MINISTL_SHARED_PTR_HPP
+﻿//shared_ptr
+//
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef MINISTL_SHARED_PTR_HPP
 #define MINISTL_SHARED_PTR_HPP
 
+#include "allocator.hpp"
 #include "weak_ptr.hpp"
 #include "unique_ptr.hpp"
+#include "utility.hpp"
 
 #include <cstddef>
+
+//Notes from LunAnalects, 2016/6/19
+//Why no allocator or deleter in shared_ptr template:
+
+//Unlike unique_ptr, shared_ptr doesn't need allocator or deleter as template argument. They are just simply passed as parameter in constructor.
+//Internally, reference count member class in smart pointer is responsible to store the allocator and deleter. so reference count class is a 3-arguments
+//template. So we need use an reference_count_base * member class in smart pointer to store the template reference_count<Ptr, Deleter, Alloc> which is 
+//inherited from reference_count_base, becuase we cannot directly store an template member class in our smart pointer without 
+//deleter and allocator template argument
+//
+
+
+//Notes from LunAnalects, 2016/6/19
+//Allocator:
+
+//Allocator in smart pointer is to allocate the memory for smart pointer member, that is, reference count member class.
+//So, it is impossible to pass an template allocator instantiated by reference because reference need be instantiated by allocator too.
+//Solution in EASTL: they pass an nontemplate allocator which allocate memory like malloc();
+//Solution in VC:	
+//
 
 namespace ministl
 {
@@ -20,7 +49,30 @@ namespace ministl
 			}
 		};
 
+		template<typename T>
+		struct type_erasure_deleter<T[]>
+		{
+			void operator()(void* p) const
+			{
+				delete[] static_cast<T*>(p);
+			}
+		};
+
+		class default_allocator
+		{
+			
+		};
 	}
+
+	template<typename T>
+	class pointer_trait
+	{
+		typedef 
+	};
+
+	template<typename T>
+	class pointer_trait<T*>
+
 	class reference_count_base
 	{
 	public:
@@ -86,19 +138,20 @@ namespace ministl
 		int32_t weakCount_;
 	};
 
-	//It's the final class, don't derive from it
-	template<typename T, typename Deleter, typename  Alloc>
+	template<typename Ptr, typename Deleter, typename  Alloc>
 	class reference_count_: public reference_count_base
 	{
 	public:
-		reference_count_(T ptr, Deleter deleter, Alloc allocator)
-			:elePtr(ptr), deleter_(deleter), allocator_(allocator){}
+
+		typedef reference_count_<Ptr, Deleter, Alloc> this_type;
+
+		//Alloc and this_type: is these two template mutually dependent?
+		reference_count_(Ptr ptr, Deleter deleter = default_delete<T>(), Alloc alloc =  allocator<this_type>())
+			:elePtr_(ptr), deleter_(deleter), allocator_(alloc){}
 
 		virtual ~reference_count_() override final
 		{
-			//Calling a virtual function in destructor is arguable(Effective C++, Item 9), 
-			//but here I call it in the final derived destructor, which is obviously harmless
-			release();
+			deleter_(elePtr_);
 		} 
 
 		virtual void release() override
@@ -109,16 +162,21 @@ namespace ministl
 			}
 			else
 			{
-				deleter_(elePtr);
+				freeThisInstance();
 			}
 		}
+		  
+
 
 	private:
-		T* elePtr;
+		Ptr elePtr_;
 		Deleter deleter_;
 		Alloc allocator_;
 
-
+		void freeThisInstance()
+		{
+			deleter_(elePtr_);
+		}
 	};
 
 	template<typename T>
@@ -174,10 +232,33 @@ namespace ministl
 		T* elementPtr_;
 		reference_count_base* refCountPtr_;
 
-		template<typename Deleter, typename Alloc>
-		reference_count_base* _allocRefCountPtr(Deleter deleter = Deleter(), Alloc allocator = Alloc())
+		typedef default_delete<T> default_deleter;
+		//This function will throw std::bad_alloc if allocator failed to allocate memory for reference count object
+		//TODO 
+		template<typename Ptr, typename Deleter = default_deleter, typename Alloc >
+		void _AllocRefCountPtr(Ptr pValue, Deleter deleter = Deleter(), Alloc allocator = Alloc())
 		{
-			return (new reference_count_<T, Deleter, Alloc>(elementPtr_, deleter, allocator));
+			try
+			{
+				refCountPtr_ = allocator.allocate(1);
+				if (!refCountPtr_)
+					throw std::bad_alloc();
+				allocator.construct(refCountPtr_, pValue, ministl::move(deleter), ministl::move(allocator));
+				//do_enable_shared_from_this?
+			}
+			catch(...)
+			{
+				deleter(pValue);
+
+				//If allocator.construct() throws exception, we need then deallocate the memory, 
+				//but could the construct() throw exception?
+				//And, if construct() use move() to move construct the allocator, we maynot call allocator again.(maybe it depends on implementation)
+
+				//if (refCountPtr_)
+				//	allocator.deallocate(refCountPtr_);
+
+				throw;
+			}
 		}
 		
 	};
@@ -186,88 +267,104 @@ namespace ministl
 	constexpr shared_ptr<T>::shared_ptr() noexcept
 		:elementPtr_(NULL),refCountPtr_(NULL)
 	{
+
 	}
 
 	template <typename T>
 	template <class Y>
 	shared_ptr<T>::shared_ptr(Y* p)
 		: elementPtr_(p),
-		refCountPtr_(_allocRefCountPtr())
+		refCountPtr_(NULL)
 	{
+		_AllocRefCountPtr(p);
 	}
 
 	template <typename T>
 	template <class Y, class D>
 	shared_ptr<T>::shared_ptr(Y* p, D d)
 		: elementPtr_(p), 
-		refCountPtr_(_allocRefCountPtr(d))
+		refCountPtr_(NULL)
 	{
+		_AllocRefCountPtr(p, d);
 	}
 
 	template <typename T>
 	template <class Y, class D, class A>
 	shared_ptr<T>::shared_ptr(Y* p, D d, A a)
 		:elementPtr_(P), 
-		refCountPtr_(d, a)
+		refCountPtr_(NULL)
 	{
-
+		_AllocRefCountPtr(p, d, a);
 	}
 
 	template <typename T>
 	template <class D>
 	shared_ptr<T>::shared_ptr(nullptr_t p, D d)
 		:elementPtr_(p),
-		refCountPtr_(d)
+		refCountPtr_(NULL)
 	{
+		_AllocRefCountPtr(p, d);
 	}
 
 	template <typename T>
 	template <class D, class A>
 	shared_ptr<T>::shared_ptr(nullptr_t p, D d, A a)
 		:elementPtr_(p),
-		refCountPtr_(d, a)
+		refCountPtr_(NULL)
 	{
+		_AllocRefCountPtr(p, d, a);
 	}
 
 	template <typename T>
 	template <class Y>
 	shared_ptr<T>::shared_ptr(const shared_ptr<Y>& r, T* p) noexcept
 		:elementPtr_(p),
-		refCountPtr_(NULL)
+		refCountPtr_(r.refCountPtr_)
 	{
-		r.refCountPtr_->addref();
-		refCountPtr_ = r.refCountPtr_;
+		if(r.refCountPtr_)
+			r.refCountPtr_->addref();
 	}
 
 	template <typename T>
 	shared_ptr<T>::shared_ptr(const shared_ptr& r) noexcept
-		:elementPtr_(r.elementPtr_), refCountPtr_(NULL)
+		:elementPtr_(r.elementPtr_), refCountPtr_(r.refCountPtr_)
 	{
-		r.refCountPtr_->addref();
-		refCountPtr_ = 
+		if (r.refCountPtr_)
+			r.refCountPtr_->addref();
 	}
 
 	template <typename T>
 	template <class Y>
 	shared_ptr<T>::shared_ptr(const shared_ptr<Y>& r) noexcept
+		:elementPtr_(r.elementPtr_), refCountPtr_(r.refCountPtr_)
 	{
+		if (r.refCountPtr_)
+			r.refCountPtr_->addref();
 	}
 
 	template <typename T>
 	shared_ptr<T>::shared_ptr(shared_ptr&& r) noexcept
+		:elementPtr_(r.elementPtr_), refCountPtr_(r.refCountPtr_)
 	{
+		r.elementPtr_ = NULL;
+		r.refCountPtr_ = NULL;
 	}
 
 	template <typename T>
 	template <class Y>
 	shared_ptr<T>::shared_ptr(shared_ptr<Y>&& r) noexcept
+		:elementPtr_(r.elementPtr_), refCountPtr_(r.refCountPtr_)
 	{
+		r.elementPtr_ = NULL;
+		r.refCountPtr_ = NULL;
 	}
 
 	template <typename T>
 	template <class Y, class D>
 	shared_ptr<T>::shared_ptr(unique_ptr<Y, D>&& r)
+		:elementPtr_(r.release()), refCountPtr_(NULL)
 	{
+		_AllocRefCountPtr(elementPtr_, r.get_deleter());
 	}
 
 	template <typename T>
@@ -279,6 +376,7 @@ namespace ministl
 	template <typename T>
 	shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr& r) noexcept
 	{
+
 	}
 
 	template <typename T>
@@ -335,31 +433,37 @@ namespace ministl
 	template <typename T>
 	T* shared_ptr<T>::get() const noexcept
 	{
+		return elementPtr_;
 	}
 
 	template <typename T>
 	T& shared_ptr<T>::operator*() const noexcept
 	{
+		return *elementPtr_;
 	}
 
 	template <typename T>
 	T* shared_ptr<T>::operator->() const noexcept
 	{
+
 	}
 
 	template <typename T>
 	long shared_ptr<T>::use_count() const noexcept
 	{
+		return refCountPtr_ ? refCountPtr_->use_count() : 0;
 	}
 
 	template <typename T>
 	bool shared_ptr<T>::unique() const noexcept
 	{
+		return (refCountPtr_ && (refCountPtr_->use_count() == 1));
 	}
 
 	template <typename T>
 	shared_ptr<T>::operator bool() const noexcept
 	{
+		return elementPtr_ == NULL;
 	}
 
 	template <typename T>
@@ -431,10 +535,26 @@ namespace ministl
 	// 20.10.2.2.10, shared_ptr get_deleter:
 	template<class D, class T> D* get_deleter(const shared_ptr<T>& p) noexcept;
 	
+	//TODO: enable_shared_from_this need some tricks, not completed yet.
+	//see EASTL share_ptr.h LINE380:do_enable_shared_from_this
 	template<typename T>
 	class enable_shared_from_this
 	{
-		
+	public:
+		shared_ptr<T> shared_from_this()
+		{
+			return shared_ptr<T>(weak_this);
+		}
+
+		shared_ptr<const T> shared_from_this() const
+		{
+			return shared_ptr<T>(weak_this);
+		}
+
+	protected:
+
+	private:
+		weak_ptr<T> weak_this;
 	};
 
 } //namespace nimistl

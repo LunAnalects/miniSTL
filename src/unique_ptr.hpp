@@ -1,4 +1,8 @@
-﻿#ifndef MINISTL_UNIQUE_PTR_HPP
+﻿#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef MINISTL_UNIQUE_PTR_HPP
 #define MINISTL_UNIQUE_PTR_HPP
 
 #include "types.hpp"
@@ -23,8 +27,6 @@ namespace ministl
 			delete[] ptr;
 		}
 	};
-
-
 
 	//TODO: unique_ptr's pointer type
 	//TODO: Specialization for unbounded arrays? class unique_ptr<T[], Deleter>

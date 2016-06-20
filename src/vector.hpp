@@ -1,5 +1,10 @@
-﻿#ifndef MINISTL_VECTOR_HPP
+﻿#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef MINISTL_VECTOR_HPP
 #define MINISTL_VECTOR_HPP
+
 #include "allocator.hpp"
 #include "iterator.hpp"
 #include "types.hpp"
@@ -240,7 +245,8 @@ namespace ministl
 
 	template <typename T, typename Allocator>
 	template <typename ... Args>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::_Construct(iterator position, size_type n, Args&&... args)
+	typename vector<T, Allocator>::iterator 
+		vector<T, Allocator>::_Construct(iterator position, size_type n, Args&&... args)
 	{
 		for (; n > 0; ++position , --n)
 		{
@@ -251,7 +257,8 @@ namespace ministl
 
 	template <typename T, typename Allocator>
 	template <typename RandomAccessIterator>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::_Construct(iterator position, RandomAccessIterator begin, RandomAccessIterator end)
+	typename vector<T, Allocator>::iterator 
+		vector<T, Allocator>::_Construct(iterator position, RandomAccessIterator begin, RandomAccessIterator end)
 	{
 		for (; begin != end; ++begin)
 		{
@@ -277,7 +284,8 @@ namespace ministl
 	}
 
 	template <typename T, typename Allocator>
-	typename vector<T, Allocator>::pointer vector<T, Allocator>::_Move(pointer begin, pointer end, pointer dest)
+	typename vector<T, Allocator>::pointer 
+		vector<T, Allocator>::_Move(pointer begin, pointer end, pointer dest)
 	{
 		uninitialized_move(begin, end, dest);
 		return dest + (end - begin);
@@ -285,7 +293,8 @@ namespace ministl
 
 	template <typename T, typename Allocator>
 	template <typename ... Args>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::_InsertImp(iterator where, size_type n, size_type newcap, Args&&... args)
+	typename vector<T, Allocator>::iterator 
+		vector<T, Allocator>::_InsertImp(iterator where, size_type n, size_type newcap, Args&&... args)
 	{
 		pointer newspace = mallocator_.allocate(newcap);
 		pointer newwhere = _Move(mBegin_, where, newspace);
@@ -298,7 +307,8 @@ namespace ministl
 
 	template <typename T, typename Allocator>
 	template <typename RandomAccessIterator>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::_InsertImp(iterator position, RandomAccessIterator begin, RandomAccessIterator end)
+	typename vector<T, Allocator>::iterator 
+		vector<T, Allocator>::_InsertImp(iterator position, RandomAccessIterator begin, RandomAccessIterator end)
 	{
 		size_type newcap = size() + begin - end;
 		pointer newspace = mallocator_.allocate(newcap);
@@ -312,7 +322,8 @@ namespace ministl
 
 	template <typename T, typename Allocator>
 	template <typename ... Args>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::_InsertAnywhere(iterator where, size_type n, Args&&... args)
+	typename vector<T, Allocator>::iterator 
+		vector<T, Allocator>::_InsertAnywhere(iterator where, size_type n, Args&&... args)
 	{
 		if (n != 0)
 		{
@@ -325,7 +336,8 @@ namespace ministl
 
 	template <typename T, typename Allocator>
 	template <typename ... Args>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::_InsertAnywhereCompact(iterator where, size_type n, Args&&... args)
+	typename vector<T, Allocator>::iterator 
+		vector<T, Allocator>::_InsertAnywhereCompact(iterator where, size_type n, Args&&... args)
 	{
 		if (n != 0)
 		{
