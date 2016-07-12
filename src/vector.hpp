@@ -38,6 +38,7 @@ namespace ministl
 		typedef T* pointer;
 		typedef const T* const_pointer;
 
+
 	protected:
 		pointer mBegin_;
 		pointer mEnd_;

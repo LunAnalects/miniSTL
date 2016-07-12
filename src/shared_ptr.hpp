@@ -72,6 +72,9 @@ namespace ministl
 
 	template<typename T>
 	class pointer_trait<T*>
+	{
+		
+	};
 
 	class reference_count_base
 	{

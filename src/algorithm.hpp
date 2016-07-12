@@ -27,6 +27,61 @@ namespace ministl
 		return dest;
 	}
 
+	template <typename InputIterator, typename Predicate>
+	bool all_of(InputIterator first, InputIterator last, Predicate pred)
+	{
+		for(auto iter = first; iter != last; ++iter)
+		{
+			if (!pred(*iter))
+				return false;
+		}
+		return true;
+	}
+
+	template <typename InputIterator, typename Predicate>
+	bool any_of(InputIterator first, InputIterator last, Predicate pred)
+	{
+		for (auto iter = first; iter != last; ++iter)
+		{
+			if (pred(*iter))
+				return true;
+		}
+		return false;
+	}
+
+	template <typename InputIterator, typename Predicate>
+	bool none_of(InputIterator first, InputIterator last, Predicate pred)
+	{
+		for (auto iter = first; iter != last; ++iter)
+		{
+			if (pred(*iter))
+				return false;
+		}
+		return false;
+	}
+
+	template <typename InputIterator, typename UnaryFunction>
+	UnaryFunction for_each(InputIterator first, InputIterator last, UnaryFunction f)
+	{
+		for(; first !=last; ++first)
+		{
+			f(*first);
+		}
+		return f;
+	}
+
+	template <typename InputIterator, typename T>
+	typename iterator_traits<InputIterator>::difference_type
+		count(InputIterator first, InputIterator last, const T &value)
+	{
+		typename iterator_traits<InputIterator>::difference_type counter = 0;
+		for(auto iter = first; iter != last; ++iter)
+		{
+			if (*iter == value)
+				++counter;
+		}
+		return counter;
+	}
 } //ministl
 
 
