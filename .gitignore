@@ -30,3 +30,7 @@
 # VS Solutions
 solutions/
 bin/
+
+#CMake and GTest
+CMakeFiles
+gtest/

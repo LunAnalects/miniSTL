@@ -9,10 +9,6 @@
 #include "memory.hpp"
 //STL
 
-TEST(ITERATOR_CASE,CTOR)
-{
-
-}
 
 TEST(ITERATOR_CASE, GENERAL)
 {
