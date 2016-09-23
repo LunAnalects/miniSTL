@@ -6,7 +6,7 @@
 #define MINISTL_UNIQUE_PTR_HPP
 
 #include "types.hpp"
-#include "internal/pointer.hpp"
+#include "internal/pointer_trait.hpp"
 namespace ministl
 {
 	//default_delete simply uses delete or delete[].

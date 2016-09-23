@@ -9,7 +9,6 @@
 #define MINISTL_SHARED_PTR_HPP
 
 #include "allocator.hpp"
-#include "weak_ptr.hpp"
 #include "unique_ptr.hpp"
 #include "utility.hpp"
 
@@ -19,7 +18,7 @@
 //Why no allocator or deleter in shared_ptr template:
 
 //Unlike unique_ptr, shared_ptr doesn't need allocator or deleter as template argument. They are just simply passed as parameter in constructor.
-//Internally, reference count member class in smart pointer is responsible to store the allocator and deleter. so reference count class is a 3-arguments
+//Internally, reference count member class in shared pointer is responsible to store the allocator and deleter. so reference count class is a 3-arguments
 //template. So we need use an reference_count_base * member class in smart pointer to store the template reference_count<Ptr, Deleter, Alloc> which is 
 //inherited from reference_count_base, becuase we cannot directly store an template member class in our smart pointer without 
 //deleter and allocator template argument
@@ -37,11 +36,13 @@
 
 namespace ministl
 {
+	template<class T> class weak_ptr;
+
 	namespace internal
 	{
 		//Difference between internal::type_erasure_deleter and default_delete in unique_ptr.hpp?
 		template<typename T>
-		struct type_erasure_deleter
+		struct type_erased_deleter
 		{
 			void operator()(void* p) const
 			{
@@ -50,7 +51,7 @@ namespace ministl
 		};
 
 		template<typename T>
-		struct type_erasure_deleter<T[]>
+		struct type_erased_deleter<T[]>
 		{
 			void operator()(void* p) const
 			{
@@ -58,30 +59,29 @@ namespace ministl
 			}
 		};
 
-		class default_allocator
+		class type_erased_allocator
 		{
 			
 		};
 	}
 
-	template<typename T>
-	class pointer_trait
-	{
-		typedef 
-	};
+	//template<typename T>
+	//class pointer_trait
 
-	template<typename T>
-	class pointer_trait<T*>
-	{
-		
-	};
+	//template<typename T>
+	//class pointer_trait<T*>
+	//{
+	//	
+	//};
 
 	class reference_count_base
 	{
 	public:
 		reference_count_base() :sharedCount_(1), weakCount_(1) {}
 
-		virtual ~reference_count_base(){}
+		virtual ~reference_count_base() {};
+
+		virtual void release() = 0;
 
 		int32_t use_count() const noexcept
 		{
@@ -92,17 +92,6 @@ namespace ministl
 		{
 			increShared();
 			increWeak();
-		}
-
-		virtual void release()
-		{
-			if (decreShared() > 0)
-			{
-				decreWeak();
-			}
-			else
-			{
-			}
 		}
 
 	protected:
@@ -141,23 +130,25 @@ namespace ministl
 		int32_t weakCount_;
 	};
 
-	template<typename Ptr, typename Deleter, typename  Alloc>
+	template<typename T, typename Deleter, typename  Alloc>
 	class reference_count_: public reference_count_base
 	{
 	public:
 
-		typedef reference_count_<Ptr, Deleter, Alloc> this_type;
+		using this_type = reference_count_<T, Deleter, Alloc>;
+
+		using allocator_type = typename internal::__allocator_traits_rebind<Alloc, this_type>::type;
 
 		//Alloc and this_type: is these two template mutually dependent?
-		reference_count_(Ptr ptr, Deleter deleter = default_delete<T>(), Alloc alloc =  allocator<this_type>())
-			:elePtr_(ptr), deleter_(deleter), allocator_(alloc){}
+		reference_count_(T ptr, Deleter deleter, Alloc alloc)
+			:elePtr_(ptr), deleter_(deleter), allocator_(){}
 
 		virtual ~reference_count_() override final
 		{
 			deleter_(elePtr_);
 		} 
 
-		virtual void release() override
+		virtual void release() override final
 		{
 			if (decreShared() > 0)
 			{
@@ -168,13 +159,15 @@ namespace ministl
 				freeThisInstance();
 			}
 		}
-		  
-
+		
+		//Make reference_count_ class noncopyable. 
+		reference_count_(const this_type &) = delete;
+		this_type & reference_count(const this_type &) = delete;
 
 	private:
-		Ptr elePtr_;
+		T elePtr_;
 		Deleter deleter_;
-		Alloc allocator_;
+		allocator_type allocator_;
 
 		void freeThisInstance()
 		{
@@ -232,14 +225,13 @@ namespace ministl
 		template<class U> bool owner_before(weak_ptr<U> const& b) const;
 
 	private:
-		T* elementPtr_;
-		reference_count_base* refCountPtr_;
+		T  *elementPtr_;
+		reference_count_base *refCountPtr_;
 
-		typedef default_delete<T> default_deleter;
 		//This function will throw std::bad_alloc if allocator failed to allocate memory for reference count object
 		//TODO 
-		template<typename Ptr, typename Deleter = default_deleter, typename Alloc >
-		void _AllocRefCountPtr(Ptr pValue, Deleter deleter = Deleter(), Alloc allocator = Alloc())
+		template<typename Ptr, typename Deleter, typename Alloc = ministl::allocator<char>>
+		void _AllocRefCountPtr(Ptr pValue, Deleter deleter, Alloc allocator = Alloc())
 		{
 			try
 			{
@@ -259,7 +251,6 @@ namespace ministl
 
 				//if (refCountPtr_)
 				//	allocator.deallocate(refCountPtr_);
-
 				throw;
 			}
 		}
@@ -268,25 +259,25 @@ namespace ministl
 
 	template <typename T>
 	constexpr shared_ptr<T>::shared_ptr() noexcept
-		:elementPtr_(NULL),refCountPtr_(NULL)
+		:elementPtr_(nullptr),refCountPtr_(nullptr)
 	{
-
+		//Don't throw exception.
 	}
 
 	template <typename T>
-	template <class Y>
+	template <typename Y>
 	shared_ptr<T>::shared_ptr(Y* p)
 		: elementPtr_(p),
-		refCountPtr_(NULL)
+		refCountPtr_(nullptr) 
 	{
-		_AllocRefCountPtr(p);
+		_AllocRefCountPtr(p, default_delete<T>());
 	}
 
 	template <typename T>
 	template <class Y, class D>
 	shared_ptr<T>::shared_ptr(Y* p, D d)
 		: elementPtr_(p), 
-		refCountPtr_(NULL)
+		refCountPtr_(nullptr)
 	{
 		_AllocRefCountPtr(p, d);
 	}
@@ -295,7 +286,7 @@ namespace ministl
 	template <class Y, class D, class A>
 	shared_ptr<T>::shared_ptr(Y* p, D d, A a)
 		:elementPtr_(P), 
-		refCountPtr_(NULL)
+		refCountPtr_(nullptr)
 	{
 		_AllocRefCountPtr(p, d, a);
 	}
@@ -304,7 +295,7 @@ namespace ministl
 	template <class D>
 	shared_ptr<T>::shared_ptr(nullptr_t p, D d)
 		:elementPtr_(p),
-		refCountPtr_(NULL)
+		refCountPtr_(nullptr)
 	{
 		_AllocRefCountPtr(p, d);
 	}
@@ -313,7 +304,7 @@ namespace ministl
 	template <class D, class A>
 	shared_ptr<T>::shared_ptr(nullptr_t p, D d, A a)
 		:elementPtr_(p),
-		refCountPtr_(NULL)
+		refCountPtr_(nullptr)
 	{
 		_AllocRefCountPtr(p, d, a);
 	}
@@ -349,8 +340,8 @@ namespace ministl
 	shared_ptr<T>::shared_ptr(shared_ptr&& r) noexcept
 		:elementPtr_(r.elementPtr_), refCountPtr_(r.refCountPtr_)
 	{
-		r.elementPtr_ = NULL;
-		r.refCountPtr_ = NULL;
+		r.elementPtr_ = nullptr;
+		r.refCountPtr_ = nullptr;
 	}
 
 	template <typename T>
@@ -358,14 +349,14 @@ namespace ministl
 	shared_ptr<T>::shared_ptr(shared_ptr<Y>&& r) noexcept
 		:elementPtr_(r.elementPtr_), refCountPtr_(r.refCountPtr_)
 	{
-		r.elementPtr_ = NULL;
-		r.refCountPtr_ = NULL;
+		r.elementPtr_ = nullptr;
+		r.refCountPtr_ = nullptr;
 	}
 
 	template <typename T>
 	template <class Y, class D>
 	shared_ptr<T>::shared_ptr(unique_ptr<Y, D>&& r)
-		:elementPtr_(r.release()), refCountPtr_(NULL)
+		:elementPtr_(r.release()), refCountPtr_(nullptr)
 	{
 		_AllocRefCountPtr(elementPtr_, r.get_deleter());
 	}
@@ -537,6 +528,132 @@ namespace ministl
 
 	// 20.10.2.2.10, shared_ptr get_deleter:
 	template<class D, class T> D* get_deleter(const shared_ptr<T>& p) noexcept;
+
+
+	template<class T> class weak_ptr {
+	public:
+		typedef T element_type;
+
+		// 20.10.2.3.1, constructors
+		constexpr weak_ptr() noexcept;
+		template<class Y> weak_ptr(shared_ptr<Y> const& r) noexcept;
+		weak_ptr(weak_ptr const& r) noexcept;
+		template<class Y> weak_ptr(weak_ptr<Y> const& r) noexcept;
+		weak_ptr(weak_ptr&& r) noexcept;
+		template<class Y> weak_ptr(weak_ptr<Y>&& r) noexcept;
+
+		// 20.10.2.3.2, destructor
+		~weak_ptr();
+
+		// 20.10.2.3.3, assignment
+		weak_ptr& operator=(weak_ptr const& r) noexcept;
+		template<class Y> weak_ptr& operator=(weak_ptr<Y> const& r) noexcept;  
+		template<class Y> weak_ptr& operator=(shared_ptr<Y> const& r) noexcept;
+		weak_ptr& operator=(weak_ptr&& r) noexcept;
+		template<class Y> weak_ptr& operator=(weak_ptr<Y>&& r) noexcept;
+
+		// 20.10.2.3.4, modifiers
+		void swap(weak_ptr& r) noexcept;
+		void reset() noexcept;
+
+		// 20.10.2.3.5, observers
+		long use_count() const noexcept;
+		bool expired() const noexcept;
+		shared_ptr<T> lock() const noexcept;
+		template<class U> bool owner_before(shared_ptr<U> const& b) const;
+		template<class U> bool owner_before(weak_ptr<U> const& b) const;
+
+	private:
+
+	};
+
+	// 20.10.2.3.6, specialized algorithms
+	template<class T> void swap(weak_ptr<T>& a, weak_ptr<T>& b) noexcept;
+
+	template <class T>
+	constexpr weak_ptr<T>::weak_ptr() noexcept
+	{
+	}
+
+	template <class T>
+	weak_ptr<T>::weak_ptr(weak_ptr const& r) noexcept
+	{
+	}
+
+	template <class T>
+	template <class Y>
+	weak_ptr<T>::weak_ptr(weak_ptr<Y> const& r) noexcept
+	{
+	}
+
+	template <class T>
+	weak_ptr<T>::weak_ptr(weak_ptr&& r) noexcept
+	{
+	}
+
+	template <class T>
+	template <class Y>
+	weak_ptr<T>::weak_ptr(weak_ptr<Y>&& r) noexcept
+	{
+	}
+
+	template <class T>
+	weak_ptr<T>::~weak_ptr()
+	{
+	}
+
+	template <class T>
+	weak_ptr<T>& weak_ptr<T>::operator=(weak_ptr const& r) noexcept
+	{
+	}
+
+	template <class T>
+	template <class Y>
+	weak_ptr<T>& weak_ptr<T>::operator=(weak_ptr<Y> const& r) noexcept
+	{
+	}
+
+	template <class T>
+	weak_ptr<T>& weak_ptr<T>::operator=(weak_ptr&& r) noexcept
+	{
+	}
+
+	template <class T>
+	template <class Y>
+	weak_ptr<T>& weak_ptr<T>::operator=(weak_ptr<Y>&& r) noexcept
+	{
+	}
+
+	template <class T>
+	void weak_ptr<T>::swap(weak_ptr& r) noexcept
+	{
+	}
+
+	template <class T>
+	void weak_ptr<T>::reset() noexcept
+	{
+	}
+
+	template <class T>
+	long weak_ptr<T>::use_count() const noexcept
+	{
+	}
+
+	template <class T>
+	bool weak_ptr<T>::expired() const noexcept
+	{
+	}
+
+	template <class T>
+	template <class U>
+	bool weak_ptr<T>::owner_before(weak_ptr<U> const& b) const
+	{
+	}
+
+	template <class T>
+	void swap(weak_ptr<T>& a, weak_ptr<T>& b) noexcept
+	{
+	}
 	
 	//TODO: enable_shared_from_this need some tricks, not completed yet.
 	//see EASTL share_ptr.h LINE380:do_enable_shared_from_this
@@ -544,6 +661,8 @@ namespace ministl
 	class enable_shared_from_this
 	{
 	public:
+		virtual ~enable_shared_from_this() {}
+
 		shared_ptr<T> shared_from_this()
 		{
 			return shared_ptr<T>(weak_this);
@@ -552,6 +671,13 @@ namespace ministl
 		shared_ptr<const T> shared_from_this() const
 		{
 			return shared_ptr<T>(weak_this);
+		}
+		weak_ptr<T> weak_from_this() {
+			return weak_ptr<T>(weak_this);
+		}
+
+		weak_ptr<const T> weak_from_this() const {
+			return weak_ptr<T>(weak_this);
 		}
 
 	protected:

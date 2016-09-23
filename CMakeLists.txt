@@ -1,17 +1,23 @@
 cmake_minimum_required(VERSION 3.1)
 project(miniSTL)
+SET(CMAKE_cxx_CREATE_STATIC_LIBRARY TRUE)
 
 #-------------------
 # Options
 #-------------------
 option(miniSTL_TEST "Enable test by googletest" OFF)
 option(GTEST_SOURCE "Build googletest from source" OFF) 
+#Export compiler commands, only valid in make and ninja
+option(CMAKE_EXPORT_COMPILE_COMMANDS "Export json file containing compiler commands" ON)
+
 
 #-------------------
 # Set variables
 #-------------------
 set(miniSTL_INCLUDE_DIR "include")
 set(miniSTL_SOURCE_DIR "source")
+
+
 
 #-------------------
 # Include
@@ -22,7 +28,7 @@ include_directories("${miniSTL_SOURCE_DIR}/internal")
 #-------------------
 # Compiler Options
 #-------------------
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++14 -Wall -Wextra -Werror")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 #-------------------
 # Set *.cpp *.cc source files. so far miniSTL is header-only.
@@ -37,12 +43,13 @@ set (miniSTL_HEADERS
     "${miniSTL_INCLUDE_DIR}/utility.hpp"
     "${miniSTL_INCLUDE_DIR}/vector.hpp"
     "${miniSTL_SOURCE_DIR}/internal/basic_string.hpp"
-    "${miniSTL_SOURCE_DIR}/internal/pointer.hpp"
+    "${miniSTL_SOURCE_DIR}/internal/pointer_trait.hpp"
+    "${miniSTL_SOURCE_DIR}/internal/shared_ptr.hpp"
     "${miniSTL_SOURCE_DIR}/internal/temp.h"
     "${miniSTL_SOURCE_DIR}/internal/types.hpp"
     "${miniSTL_SOURCE_DIR}/internal/unique_ptr.hpp"
-    "${miniSTL_SOURCE_DIR}/internal/unique_ptr_template.hpp"
     "${miniSTL_SOURCE_DIR}/internal/weak_ptr.hpp"
+    "${miniSTL_SOURCE_DIR|/internal/enable_shared.hpp"
     )
 set (miniSTL_SOURCES )
 

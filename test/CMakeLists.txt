@@ -9,10 +9,10 @@
 #-------------------
 if(GTEST_SOURCE)
     if (NOT GTEST_SOURCE_DIR)
-        set(GTEST_SOURCE_DIR "${PROJECT_SOURCE_DIR}../googletest" CACHE PATH)
+        set(GTEST_SOURCE_DIR "${PROJECT_SOURCE_DIR}/../googletest" CACHE PATH "GoogleTest source path")
     endif()
     message(STATUS "${GTEST_SOURCE_DIR}")
-    #add_subdirectory("${GTEST_SOURCE_DIR}" "gtest")
+    add_subdirectory("${GTEST_SOURCE_DIR}" "gtest")
 else()
     find_package(GTest REQUIRED)
     add_library(gtest ALIAS GTest::GTest)
@@ -33,5 +33,5 @@ set(testSOURCE
 #-------------------
 # Add test executable and link test libraries
 #-------------------
-#add_executable(shared_ptr_test "shared_ptr_case.cpp")
-#target_link_libraries(shared_ptr_test testLib)
+add_executable(shared_ptr_test "shared_ptr_case.cpp")
+target_link_libraries(shared_ptr_test gtest gtest_main miniSTL)

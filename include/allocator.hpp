@@ -7,7 +7,7 @@
 
 #include "types.hpp"
 #include <stdlib.h>
-#include <forward_list>
+#include <type_traits>
 
 namespace ministl
 {
@@ -38,6 +38,11 @@ namespace ministl
 
 		}
 		~allocator() = default;
+
+		template <typename T>
+		struct rebind { typedef allocator<T> other; };
+		template <typename T>
+		using rebind_t = allocator<T>;
 
 		//
 		pointer address(reference x) const noexcept
@@ -104,6 +109,56 @@ namespace ministl
 
 	};
 
+	namespace internal {
+		//From libcxx
+		//
+		template <class _Tp, class _Up>
+		struct __has_rebind
+		{
+		private:
+			struct __two { char __lx; char __lxx; };
+			template <class _Xp> static __two __test(...);
+			template <class _Xp> static char __test(typename _Xp::template rebind<_Up>* = 0);
+		public:
+			static const bool value = sizeof(__test<_Tp>(0)) == 1;
+		};
+
+		template <class _Tp, class _Up, bool = __has_rebind<_Tp, _Up>::value>
+		struct __has_rebind_other
+		{
+		private:
+			struct __two { char __lx; char __lxx; };
+			template <class _Xp> static __two __test(...);
+			template <class _Xp> static char __test(typename _Xp::template rebind<_Up>::other* = 0);
+		public:
+			static const bool value = sizeof(__test<_Tp>(0)) == 1;
+		};
+
+		template <class _Tp, class _Up>
+		struct __has_rebind_other<_Tp, _Up, false>
+		{
+			static const bool value = false;
+		};
+
+		template <class _Tp, class _Up, bool = __has_rebind_other<_Tp, _Up>::value>
+		struct __allocator_traits_rebind
+		{
+			typedef typename _Tp::template rebind<_Up>::other type;
+		};
+
+		template <template <class, class...> class _Alloc, class _Tp, class ..._Args, class _Up>
+		struct __allocator_traits_rebind<_Alloc<_Tp, _Args...>, _Up, true>
+		{
+			typedef typename _Alloc<_Tp, _Args...>::template rebind<_Up>::other type;
+		};
+
+		template <template <class, class...> class _Alloc, class _Tp, class ..._Args, class _Up>
+		struct __allocator_traits_rebind<_Alloc<_Tp, _Args...>, _Up, false>
+		{
+			typedef _Alloc<_Up, _Args...> type;
+		};
+	}
+
 	template <> 
 	class allocator<void>
 	{
@@ -143,6 +198,31 @@ namespace ministl
 
 	};
 	 
+	template<typename Alloc>
+	struct allocator_traits {
+		using allocator_type = Alloc;
+		using value_type =typename Alloc::value_type;
+		//using pointer = ;
+		//using const_pointer = ;
+		//using void_pointer = ;
+		//using difference_type = ;
+		//using size_type =
+		//using propagate_on_container_copy_assignment =
+		//using propagate_on_container_move_assignment =
+		//using propagate_on_contaner_swap
+		//using is_always_equal = ;
+
+		template<typename Other>
+		using rebind_alloc = internal::__allocator_traits_rebind<Alloc, Other>;
+
+		//static allocate(){}
+		//static deallocate(){}
+		//static construct(){}
+		//static destroy(){}
+		//static max_size(){}
+		//static select_on_container_copy_construction(){}
+
+	};
 
 
 	template<typename T1, typename T2>

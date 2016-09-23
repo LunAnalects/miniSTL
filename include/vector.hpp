@@ -20,8 +20,8 @@
 namespace ministl
 {
 	//Reasons for containerBase(like vectorBase in this file, dequeBase for deque.hpp):
-	//(According to EASTL and libcxx )
-	//exception safety.
+	//(According to EASTL and libcxx ) is about exception safety.
+	//
 	//
 	//
 	//Most STL implementations introduce pair type like compressed_pair to store allocator and poitner

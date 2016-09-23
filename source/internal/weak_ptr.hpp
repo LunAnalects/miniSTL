@@ -5,7 +5,6 @@
 #ifndef MINISTL_WEAK_PTR_HPP
 #define MINISTL_WEAK_PTR_HPP
 
-#include "utility.hpp"
 #include "shared_ptr.hpp"
 
 namespace ministl
