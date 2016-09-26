@@ -54,7 +54,7 @@ namespace ministl
 			return &x;
 		}
 
-		//TODO different implementation is needed. the original just calls malloc() and free()
+		//TODO different implementation is needed. this one just calls malloc() and free()
 		//return NULL when memory alloc failed.
 		pointer allocate(size_type n, allocator<void>::const_pointer hint = nullptr)
 		{
@@ -213,7 +213,7 @@ namespace ministl
 		//using is_always_equal = ;
 
 		template<typename Other>
-		using rebind_alloc = internal::__allocator_traits_rebind<Alloc, Other>;
+		using rebind_alloc = typename internal::__allocator_traits_rebind<Alloc, Other>::type;
 
 		//static allocate(){}
 		//static deallocate(){}

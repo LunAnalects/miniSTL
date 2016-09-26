@@ -6,6 +6,8 @@ namespace ministl
 {
 #ifdef _DEBUG
 #define MINISTL_DEBUG 1
+
+
 #endif
 }
 

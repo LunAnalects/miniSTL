@@ -30,6 +30,10 @@ include_directories("${miniSTL_SOURCE_DIR}/internal")
 #-------------------
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
+#Keep the same with Googletest in VS
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+
 #-------------------
 # Set *.cpp *.cc source files. so far miniSTL is header-only.
 #-------------------
@@ -49,7 +53,7 @@ set (miniSTL_HEADERS
     "${miniSTL_SOURCE_DIR}/internal/types.hpp"
     "${miniSTL_SOURCE_DIR}/internal/unique_ptr.hpp"
     "${miniSTL_SOURCE_DIR}/internal/weak_ptr.hpp"
-    "${miniSTL_SOURCE_DIR|/internal/enable_shared.hpp"
+    "${miniSTL_SOURCE_DIR}/internal/enable_shared.hpp"
     )
 set (miniSTL_SOURCES )
 

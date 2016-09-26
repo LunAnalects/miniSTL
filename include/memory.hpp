@@ -10,7 +10,6 @@
 #include "pointer_trait.hpp"
 #include "unique_ptr.hpp"
 #include "shared_ptr.hpp"
-#include "iterator.hpp"
 #include "utility.hpp"
 #include "enable_shared.hpp"
 

@@ -3,7 +3,6 @@
 
 #include <string>
 
-#include "gtest/gtest.h"
 #include "test_utility.hpp"
 
 //ministl

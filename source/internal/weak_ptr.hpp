@@ -2,6 +2,7 @@
 #pragma once
 #endif
 
+#include <exception>
 #ifndef MINISTL_WEAK_PTR_HPP
 #define MINISTL_WEAK_PTR_HPP
 
@@ -9,6 +10,7 @@
 
 namespace ministl
 {
+	// 
 	class bad_weak_ptr: public std::exception
 	{
 		
@@ -48,7 +50,8 @@ namespace ministl
 		template<class U> bool owner_before(weak_ptr<U> const& b) const;
 
 	private:
-
+		T * elePtr_;
+		reference_count_base *refPtr_;
 	};
 
 	// 20.10.2.3.6, specialized algorithms

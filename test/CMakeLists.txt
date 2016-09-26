@@ -34,4 +34,5 @@ set(testSOURCE
 # Add test executable and link test libraries
 #-------------------
 add_executable(shared_ptr_test "shared_ptr_case.cpp")
-target_link_libraries(shared_ptr_test gtest gtest_main miniSTL)
+target_link_libraries(shared_ptr_test PUBLIC gtest PUBLIC  gtest_main INTERFACE miniSTL)
+
