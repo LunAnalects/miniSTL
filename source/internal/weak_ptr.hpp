@@ -1,11 +1,7 @@
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#include <exception>
 #ifndef MINISTL_WEAK_PTR_HPP
 #define MINISTL_WEAK_PTR_HPP
 
+#include <exception>
 #include "shared_ptr.hpp"
 
 namespace ministl

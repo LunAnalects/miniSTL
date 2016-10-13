@@ -1,7 +1,3 @@
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
 #ifndef MINISTL_BASIC_STRING_HPP
 #define MINISTL_BASIC_STRING_HPP
 

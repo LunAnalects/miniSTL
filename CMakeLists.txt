@@ -28,7 +28,7 @@ include_directories("${miniSTL_SOURCE_DIR}/internal")
 #-------------------
 # Compiler Options
 #-------------------
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 #Keep the same with Googletest in VS
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")

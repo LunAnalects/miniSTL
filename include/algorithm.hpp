@@ -1,8 +1,4 @@
-﻿#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef MINISTL_ALGORITHM_HPP
+﻿#ifndef MINISTL_ALGORITHM_HPP
 #define MINISTL_ALGORITHM_HPP
 #include "utility.hpp"
 
@@ -13,7 +9,6 @@ namespace ministl
 	template<typename ForwardIterator1, typename ForwardIterator2>
 	void iter_swap(ForwardIterator1 a, ForwardIterator2 b)
 	{
-		using ministl::swap;
 		swap(*a, *b);
 	}
 

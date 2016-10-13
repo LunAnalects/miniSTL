@@ -1,8 +1,4 @@
-﻿#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef MINISTL_UTILITY_STL
+﻿#ifndef MINISTL_UTILITY_STL
 #define MINISTL_UTILITY_STL
 
 #include "memory.hpp"

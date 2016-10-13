@@ -11,7 +11,54 @@
 
 namespace ministl
 {
+	
+	template <typename T> class allocator;
+
+	template <> 
+	class allocator<void>
+	{
+	public:
+		using this_type			= allocator<void>;
+		using pointer			= void *;
+		using const_pointer		= const void *;
+		using size_type			= size_t;
+		using difference_type	= ptrdiff_t;
+
+		template<typename U>
+		struct rebind
+		{
+			using other = allocator<U>;
+		};
+
+		allocator() noexcept
+		{	// construct default allocator (do nothing)
+		}
+
+		allocator(const allocator<void>&) noexcept
+		{	// construct by copying (do nothing)
+		}
+
+		template<class _Other>
+		allocator(const allocator<_Other>&) noexcept
+		{	// construct from related allocator (do nothing)
+		}
+
+		template<class _Other>
+		allocator<void>& operator=(const allocator<_Other>&)
+		{	// assign from a related allocator (do nothing)
+			return (*this);
+		}
+
+	};
+
+
+	 
 	//TODO allocator_tarits
+	// Note:
+	// In C++17 address(), construct(), destruct(), destroy() will be deprecated
+	// Why std::allocator implementation doesn't need size_type n in deallocate,
+	//  but still be in  parameter?
+	//  http://stackoverflow.com/questions/22113947/why-does-stdallocatordeallocate-have-a-size-type-parameter-which-is-not
 	template <typename T> 
 	class allocator
 	{
@@ -39,10 +86,10 @@ namespace ministl
 		}
 		~allocator() = default;
 
-		template <typename T>
-		struct rebind { typedef allocator<T> other; };
-		template <typename T>
-		using rebind_t = allocator<T>;
+		template <typename OtherType>
+		struct rebind { typedef allocator<OtherType> other; };
+		template <typename OtherType>
+		using rebind_t = allocator<OtherType>;
 
 		//
 		pointer address(reference x) const noexcept
@@ -54,20 +101,18 @@ namespace ministl
 			return &x;
 		}
 
-		//TODO different implementation is needed. this one just calls malloc() and free()
-		//return NULL when memory alloc failed.
 		pointer allocate(size_type n, allocator<void>::const_pointer hint = nullptr)
 		{
 			size_type userSize = n * sizeof(value_type);
 			pointer allocated_ptr = NULL; //use NULL because of malloc() 
 			if(userSize >0 && userSize < static_cast<size_t>(-1) )
-				allocated_ptr = static_cast<pointer>(malloc( n * sizeof(value_type) ));
+				allocated_ptr = static_cast<pointer>(::operator new( n * sizeof(value_type) ));
 			return allocated_ptr;
 		}
 
-		void deallocate(pointer p)
+		void deallocate(pointer p, size_type n)
 		{
-			free(p);
+			::operator delete(p);
 		}
 
 		void destruct(pointer p)
@@ -87,8 +132,8 @@ namespace ministl
 			destruct(begin, n);
 		}
 
-		template<typename...Args>
-		void construct(pointer p,Args&&... args)
+		template<typename U, typename...Args>
+		void construct(U*  p,Args&&... args)
 		{
 			::new(static_cast<void*>(p)) value_type(std::forward<Args>(args)...);
 		}
@@ -103,11 +148,14 @@ namespace ministl
 		//in C++11: template <class U, class... Args>
 		//			void construct(U* p, Args&&... args);
 		*/
+		template<typename U>
+		void destroy(U* p) { p->~U(); }
 
 	private:
 
 
 	};
+
 
 	namespace internal {
 		//From libcxx
@@ -159,45 +207,6 @@ namespace ministl
 		};
 	}
 
-	template <> 
-	class allocator<void>
-	{
-	public:
-		using this_type			= allocator<void>;
-		using pointer			= void *;
-		using const_pointer		= const void *;
-		using size_type			= size_t;
-		using difference_type	= ptrdiff_t;
-
-		template<typename U>
-		struct rebind
-		{
-			using other = allocator<U>;
-		};
-
-		allocator() noexcept
-		{	// construct default allocator (do nothing)
-		}
-
-		allocator(const allocator<void>&) noexcept
-		{	// construct by copying (do nothing)
-		}
-
-		template<class _Other>
-		allocator(const allocator<_Other>&) noexcept
-		{	// construct from related allocator (do nothing)
-		}
-
-		template<class _Other>
-		allocator<void>& operator=(const allocator<_Other>&)
-		{	// assign from a related allocator (do nothing)
-			return (*this);
-		}
-
-
-
-	};
-	 
 	template<typename Alloc>
 	struct allocator_traits {
 		using allocator_type = Alloc;

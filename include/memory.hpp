@@ -1,7 +1,3 @@
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
 #ifndef MINISTL_MEMORY_HPP
 #define MINISTL_MEMORY_HPP
 
@@ -18,12 +14,12 @@ namespace ministl
 	template<typename T>
 	inline void *get_temporary_buffer(ptrdiff_t n)
 	{
-		return operator new(sizeof(T) * n);
+		return ::operator new(sizeof(T) * n);
 	}
 
 	inline void return_temporary_buffer(void *p)
 	{
-		delete[] p;
+		::operator delete(p);
 	}
 	
 	template<typename ForwardIterator>

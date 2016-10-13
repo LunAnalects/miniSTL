@@ -1,11 +1,4 @@
-﻿//shared_ptr
-//
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef MINISTL_SHARED_PTR_HPP
+﻿#ifndef MINISTL_SHARED_PTR_HPP
 #define MINISTL_SHARED_PTR_HPP
 
 #include "allocator.hpp"
@@ -169,8 +162,8 @@ namespace ministl
 		void freeThisInstance()
 		{
 			(*this).~reference_count_();
-			typename allocator_traits<Alloc>::rebind_alloc<this_type> tempA2;
-			tempA2.deallocate(this);
+			typename allocator_traits<Alloc>::template rebind_alloc<this_type> tempA2;
+			tempA2.deallocate(this, 1);
 		}
 	};
 
@@ -287,7 +280,7 @@ namespace ministl
 	template <typename T>
 	template <class Y, class D, class A>
 	shared_ptr<T>::shared_ptr(Y* p, D d, A a)
-		:elementPtr_(P), 
+		:elementPtr_(p), 
 		refCountPtr_(nullptr)
 	{
 		_AllocRefCountPtr(p, d, a);
@@ -425,7 +418,7 @@ namespace ministl
 	template <class Y>
 	void shared_ptr<T>::reset(Y* p)
 	{
-		shared_ptr(p, d).swap(*this);
+		shared_ptr(p).swap(*this);
 	}
 
 	template <typename T>
@@ -503,15 +496,14 @@ namespace ministl
 
 	template<class T, class A, class... Args>
 	shared_ptr<T> allocate_shared(const A& a, Args&&... args) {
-		typename allocator_traits<A>::rebind_alloc<shared_ptr_block_<T, default_delete<T>, A>> tempA2;
+		typename allocator_traits<A>::template rebind_alloc<shared_ptr_block_<T, default_delete<T>, A>> tempA2;
 
 	}
 
-	template<class T, class... Args> 
-	shared_ptr<T> make_shared(Args&&... args) {
-		allocate_shared(ministl::allocator<shared_ptr_block>, T(std::forward<Args>(args)...));
-
-	}
+	//template<class T, class... Args> 
+	//shared_ptr<T> make_shared(Args&&... args) {
+	//	allocate_shared(ministl::allocator<shared_ptr_block>, T(std::forward<Args>(args)...));
+	//}
 
 	// 20.10.2.2.7, shared_ptr comparisons:
 	template<class T, class U>

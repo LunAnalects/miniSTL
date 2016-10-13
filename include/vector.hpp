@@ -1,8 +1,4 @@
-﻿#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef MINISTL_VECTOR_HPP
+﻿#ifndef MINISTL_VECTOR_HPP
 #define MINISTL_VECTOR_HPP
 
 #include "allocator.hpp"
@@ -378,7 +374,7 @@ namespace ministl
 	//		void>::type>
 	template <typename T, typename Allocator>
 	template <class InputIterator>
-	vector<T, Allocator>::vector(InputIterator first, InputIterator last, const Allocator& alloc = Allocator())
+	vector<T, Allocator>::vector(InputIterator first, InputIterator last, const Allocator& alloc)
 		: base_type(last - first, alloc)
 	{
 		ministl::uninitialized_copy(first, last, mBegin_);
@@ -609,7 +605,7 @@ namespace ministl
 		}
 		else
 		{
-			_InsertAnywhere(mEnd_, 1, args);
+			_InsertAnywhere(mEnd_, 1, args...);
 		}
 	}
 
