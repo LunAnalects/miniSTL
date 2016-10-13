@@ -27,9 +27,10 @@
 *.out
 *.app
 
-# VS Solutions
+# Build and bin Folds
 solutions/
 bin/
+build/
 .vs
 .vscode
 
