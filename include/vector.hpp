@@ -1,4 +1,4 @@
-﻿#ifndef MINISTL_VECTOR_HPP
+#ifndef MINISTL_VECTOR_HPP
 #define MINISTL_VECTOR_HPP
 
 #include "allocator.hpp"

@@ -1,4 +1,4 @@
-﻿#ifndef MINISTL_ALGORITHM_HPP
+#ifndef MINISTL_ALGORITHM_HPP
 #define MINISTL_ALGORITHM_HPP
 #include "utility.hpp"
 

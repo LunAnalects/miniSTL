@@ -1,4 +1,4 @@
-﻿#ifndef MINISTL_TYPE_TRAITS_HPP
+#ifndef MINISTL_TYPE_TRAITS_HPP
 #define MINISTL_TYPE_TRAITS_HPP
 
 namespace ministl

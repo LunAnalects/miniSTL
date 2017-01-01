@@ -1,4 +1,4 @@
-﻿#ifndef MINISTL_UTILITY_STL
+#ifndef MINISTL_UTILITY_STL
 #define MINISTL_UTILITY_STL
 
 #include "memory.hpp"

@@ -46,21 +46,23 @@ set (miniSTL_HEADERS
     "${miniSTL_INCLUDE_DIR}/type_traits.hpp"
     "${miniSTL_INCLUDE_DIR}/utility.hpp"
     "${miniSTL_INCLUDE_DIR}/vector.hpp"
-    "${miniSTL_SOURCE_DIR}/internal/basic_string.hpp"
+	"${miniSTL_INCLUDE_DIR}/map.hpp"
+	"${miniSTL_INCLUDE_DIR}/set.hpp"
+    )
+set (miniSTL_SOURCES 
+	"${miniSTL_SOURCE_DIR}/internal/basic_string.hpp"
     "${miniSTL_SOURCE_DIR}/internal/pointer_trait.hpp"
     "${miniSTL_SOURCE_DIR}/internal/shared_ptr.hpp"
     "${miniSTL_SOURCE_DIR}/internal/temp.h"
     "${miniSTL_SOURCE_DIR}/internal/types.hpp"
     "${miniSTL_SOURCE_DIR}/internal/unique_ptr.hpp"
     "${miniSTL_SOURCE_DIR}/internal/weak_ptr.hpp"
-    "${miniSTL_SOURCE_DIR}/internal/enable_shared.hpp"
-    )
-set (miniSTL_SOURCES )
+    "${miniSTL_SOURCE_DIR}/internal/enable_shared.hpp")
 
 #-------------------
 # Library target, target include.
 #-------------------
-add_library(miniSTL ${miniSTL_HEADERS})
+add_library(miniSTL ${miniSTL_HEADERS} ${miniSTL_SOURCES})
 #The next line is to fix cmake link language error in Windows and VS2015.
 set_target_properties(miniSTL PROPERTIES  LINKER_LANGUAGE cxx)
 

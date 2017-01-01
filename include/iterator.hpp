@@ -1,4 +1,4 @@
-﻿#ifndef MINISTL_ITERATOR_HPP
+#ifndef MINISTL_ITERATOR_HPP
 #define MINISTL_ITERATOR_HPP
 #include "types.hpp"
 
